@@ -1,0 +1,541 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Okuyuki</title>
+<meta name="description" content="Galaxy の写真と動画を、Meta Quest では立体で、LG のテレビでは 4K で。写真はスマホに置いたまま見るアプリ、Okuyuki の紹介です。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@600;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one column of receding "planes"; each section is a plane, the hero is a stack of photos falling back into depth. */
+:root {
+  --bg: #eceef3;          /* cool slate paper */
+  --surface: #f6f7f9;
+  --sunk: #dde1e6;
+  --ink: #14171c;
+  --muted: #5a6270;
+  --line: #c6ccd4;
+  --accent: #2b4be6;      /* the app's brand blue (front square of the mark) */
+  --accent-ink: #ffffff;
+  --accent-soft: #dfe5fd;
+  --coral: #d9512f;       /* the mark's back square; used only for the word 奥行き */
+  --ok: #1f7a4d;
+  --device: #1b1f26;      /* hardware bezels stay dark in both themes */
+  --device-hi: #2c323c;
+  --screen: #0d1014;
+  --f-display: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  --f-body: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --s-1: .8125rem; --s0: 1rem; --s1: 1.25rem; --s2: 1.625rem; --s3: clamp(1.6rem, 5.2vw, 2.25rem); --s4: clamp(2.5rem, 7vw, 4.5rem);
+  --wrap: 72rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1216; --surface: #161a20; --sunk: #1d222a; --ink: #e8ebef; --muted: #98a1ae; --line: #2b313a;
+    --accent: #8fa1ff; --accent-ink: #0b1030; --accent-soft: #1c2346; --coral: #f07a58; --ok: #5cc98f;
+    --device: #05070a; --device-hi: #20252d; --screen: #000;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1216; --surface: #161a20; --sunk: #1d222a; --ink: #e8ebef; --muted: #98a1ae; --line: #2b313a;
+  --accent: #8fa1ff; --accent-ink: #0b1030; --accent-soft: #1c2346; --coral: #f07a58; --ok: #5cc98f;
+  --device: #05070a; --device-hi: #20252d; --screen: #000;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: var(--f-body); font-size: var(--s0); line-height: 1.85;
+  font-feature-settings: "palt" 0;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+.wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: clamp(16px, 4vw, 40px); }
+h1, h2, h3 { font-family: var(--f-display); font-weight: 800; line-height: 1.3; text-wrap: balance; word-break: auto-phrase; margin: 0; letter-spacing: .01em; }
+h2 { font-size: var(--s3); }
+h3 { font-size: var(--s1); font-family: var(--f-body); font-weight: 700; }
+p { margin: 0; }
+a { color: inherit; text-underline-offset: .2em; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+.mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.eyebrow { font-size: var(--s-1); letter-spacing: .14em; color: var(--accent); font-weight: 700; }
+.lede { color: var(--muted); max-width: 38em; }
+
+/* header */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: color-mix(in srgb, var(--bg) 86%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+.top .wrap { display: flex; align-items: center; gap: 1.5rem; min-height: 3.5rem; }
+.mark { display: flex; align-items: center; gap: .55rem; text-decoration: none; font-family: var(--f-display); font-weight: 800; font-size: 1.15rem; letter-spacing: .02em; }
+.mark svg { width: 1.5rem; height: 1.5rem; }
+.phone .bm { width: 10px; height: 10px; flex: none; }
+.top nav { display: flex; gap: 1.25rem; margin-left: auto; font-size: .875rem; color: var(--muted); }
+.top nav a { text-decoration: none; }
+.top nav a:hover { color: var(--ink); }
+@media (max-width: 720px) { .top nav { display: none; } }
+
+/* hero */
+.hero { padding-block: clamp(2.5rem, 7vw, 5.5rem) clamp(2rem, 5vw, 4rem); }
+.hero .wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: clamp(1.5rem, 4vw, 4rem); align-items: center; }
+@media (max-width: 860px) { .hero .wrap { grid-template-columns: minmax(0, 1fr); } }
+.hero h1 { font-size: var(--s4); line-height: 1.18; }
+.hero h1 .deep { color: var(--coral); }
+.hero .copy { display: grid; gap: 1.4rem; min-width: 0; }
+.status { display: inline-flex; align-items: center; gap: .5rem; font-size: var(--s-1); border: 1px solid var(--line); background: var(--surface); padding: .3rem .75rem; border-radius: 999px; width: fit-content; color: var(--muted); }
+.status i { width: .5rem; height: .5rem; border-radius: 50%; background: var(--accent); display: block; }
+.cta { display: flex; flex-wrap: wrap; gap: .75rem; }
+.btn { display: inline-flex; align-items: center; gap: .5rem; padding: .7rem 1.2rem; border-radius: 999px; text-decoration: none; font-weight: 700; font-size: .9375rem; border: 1px solid var(--line); background: var(--surface); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn:hover { filter: brightness(1.05); }
+
+/* the depth stack */
+.stack { position: relative; aspect-ratio: 5 / 4; max-width: 100%; }
+.stack .frame { position: absolute; left: 6%; top: 34%; width: 62%; aspect-ratio: 3 / 2; border-radius: 6px; overflow: hidden; box-shadow: 0 30px 50px -30px rgba(0,0,0,.55); transform-origin: 0 100%; animation: recede 1.4s cubic-bezier(.2,.7,.2,1) both; }
+.stack .frame svg { width: 100%; height: 100%; display: block; }
+.stack .f1 { --t: translate(58%, -52%) scale(.56); --o: .5; animation-delay: .3s; }
+.stack .f2 { --t: translate(30%, -26%) scale(.76); --o: .78; animation-delay: .18s; }
+.stack .f3 { --t: translate(0, 0) scale(1); --o: 1; animation-delay: .06s; }
+.stack .frame { transform: var(--t); opacity: var(--o); }
+@keyframes recede { from { transform: translate(0, 0) scale(1.06); opacity: 0; } to { transform: var(--t); opacity: var(--o); } }
+@media (prefers-reduced-motion: reduce) { .stack .frame { animation: none; } }
+@media (max-width: 860px) { .stack { aspect-ratio: 16 / 10; } .stack .frame { top: 30%; width: 58%; } }
+.stack .hand { position: absolute; right: 4%; bottom: 0; width: clamp(128px, 30%, 176px); }
+.stack .tag { position: absolute; font-size: .6875rem; color: var(--muted); font-family: var(--f-mono); }
+
+/* phone mock (mirrors the real library screen) */
+.phone { background: var(--device); border-radius: 26px; padding: 7px; box-shadow: 0 24px 40px -24px rgba(0,0,0,.6), inset 0 0 0 1px var(--device-hi); }
+.phone .scr { background: #f5f6f8; color: #16191e; border-radius: 20px; overflow: hidden; font-size: 9px; line-height: 1.4; display: grid; }
+.phone .bar { display: flex; justify-content: space-between; align-items: center; padding: 14px 10px 4px; }
+.phone .bar b { font-size: 12px; font-weight: 500; }
+.phone .bar, .phone .chips span, .phone .day { white-space: nowrap; }
+.phone .live { color: #1f7a4d; font-size: 7px; background: #e3f3ea; padding: 1px 6px; border-radius: 999px; }
+.phone .bar b { display: flex; align-items: center; gap: 4px; }
+.phone .seg { display: grid; grid-template-columns: 1fr 1fr; margin: 4px 8px 6px; padding: 2px; background: #e6e8ee; border-radius: 999px; font-size: 7px; text-align: center; }
+.phone .seg span { padding: 2px 0; border-radius: 999px; }
+.phone .seg span.on { background: #fff; font-weight: 700; }
+.phone .grid > div.now { outline: 1.5px solid #e9603f; outline-offset: -1.5px; }
+.phone .grid em.n { left: 3px; top: auto; bottom: 3px; background: #e9603f; }
+.phone .mini { display: flex; align-items: center; gap: 5px; margin: 5px 6px 4px; padding: 4px 6px; background: #1b1f2a; color: #fff; border-radius: 7px; font-size: 6.5px; line-height: 1.3; white-space: nowrap; overflow: hidden; }
+.phone .mini i { width: 14px; height: 14px; border-radius: 3px; overflow: hidden; flex: none; display: block; }
+.phone .mini i svg { width: 100%; height: 100%; display: block; }
+.phone .mini small { color: #9fb0ff; display: block; font-size: 6px; }
+.phone .card { margin: 4px 8px; padding: 7px 8px; border-radius: 9px; background: #dcf1e4; display: grid; gap: 2px; }
+.phone .card b { font-size: 10px; }
+.phone .card span { font-size: 6.5px; color: #3c5246; }
+.phone .card .tg { justify-self: end; width: 20px; height: 11px; border-radius: 999px; background: #2b4be6; position: relative; margin-top: -14px; }
+.phone .card .tg::after { content: ""; position: absolute; right: 2px; top: 2px; width: 7px; height: 7px; border-radius: 50%; background: #fff; }
+.phone .box { margin: 4px 8px; padding: 7px 8px; border-radius: 9px; background: #fff; display: grid; gap: 3px; font-size: 7px; }
+.phone .box .row { display: flex; justify-content: space-between; align-items: center; gap: 4px; }
+.phone .box .open { background: #2b4be6; color: #fff; border-radius: 999px; padding: 1px 8px; font-size: 7px; }
+.phone .nav span.on { background: #dfe5fd; border-radius: 999px; padding: 0 6px; }
+.phone .chips { display: flex; gap: 4px; padding: 4px 10px 6px; }
+.phone .chips span { border: 1px solid #cfd4db; border-radius: 6px; padding: 1px 6px; font-size: 7.5px; }
+.phone .chips span.on { background: #e4e0f0; border-color: #e4e0f0; }
+.phone .day { padding: 2px 10px 4px; font-size: 7.5px; color: #555c66; }
+.phone .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; }
+.phone .grid > div { position: relative; aspect-ratio: 1; overflow: hidden; }
+.phone .grid svg { width: 100%; height: 100%; display: block; }
+.phone .grid em { position: absolute; font-style: normal; font-size: 6.5px; color: #fff; background: rgba(0,0,0,.55); padding: 0 3px; border-radius: 2px; left: 3px; top: 3px; }
+.phone .grid em.v { left: auto; top: auto; right: 3px; bottom: 3px; }
+.phone .nav { display: flex; justify-content: space-around; padding: 6px 0 9px; background: #fff; font-size: 6.5px; color: #555c66; }
+.phone .nav span.on { color: #16191e; font-weight: 700; }
+
+/* sections */
+section.plane { padding-block: clamp(3rem, 8vw, 6rem); border-top: 1px solid var(--line); }
+.head { display: grid; gap: .8rem; margin-bottom: clamp(1.75rem, 4vw, 3rem); max-width: 44rem; }
+
+/* three devices */
+.trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(1rem, 2.5vw, 2rem); }
+@media (max-width: 900px) { .trio { grid-template-columns: minmax(0, 1fr); } }
+.dev { display: grid; grid-template-rows: auto auto 1fr; gap: 1.1rem; min-width: 0; }
+.dev .stage { background: var(--sunk); border-radius: 10px; aspect-ratio: 4 / 3; display: grid; place-items: center; padding: 1.25rem; overflow: hidden; }
+.dev .role { font-size: var(--s-1); color: var(--muted); display: flex; gap: .5rem; align-items: baseline; flex-wrap: wrap; }
+.dev .role b { color: var(--ink); font-size: var(--s1); font-family: var(--f-display); font-weight: 800; }
+.dev ul { margin: 0; padding-left: 1.1em; color: var(--muted); display: grid; gap: .25rem; }
+.dev ul li::marker { color: var(--accent); }
+.stage .phone { width: 42%; max-width: 150px; }
+
+/* quest: two eyes */
+.visor { width: 100%; max-width: 320px; background: var(--device); border-radius: 40px 40px 56px 56px; padding: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; box-shadow: inset 0 0 0 1px var(--device-hi); }
+.eye { position: relative; border-radius: 30px 20px 20px 34px; overflow: hidden; aspect-ratio: 1; }
+.eye + .eye { border-radius: 20px 30px 34px 20px; }
+.eye svg { width: 100%; height: 100%; display: block; }
+.eye span { position: absolute; left: 50%; bottom: 6px; transform: translateX(-50%); font-size: 9px; color: #fff; background: rgba(0,0,0,.5); padding: 0 6px; border-radius: 4px; white-space: nowrap; }
+
+/* tv */
+.tv { width: 100%; max-width: 340px; }
+.tv .panel { background: var(--device); padding: 5px; border-radius: 4px; box-shadow: inset 0 0 0 1px var(--device-hi); }
+.tv .pic { position: relative; aspect-ratio: 16 / 9; overflow: hidden; background: var(--screen); }
+.tv .pic svg { width: 100%; height: 100%; display: block; }
+.tv .osd { position: absolute; left: 4%; top: 6%; display: grid; color: #fff; font-size: 8px; line-height: 1.3; text-shadow: 0 1px 3px rgba(0,0,0,.5); }
+.tv .osd b { background: none; padding: 0; font-weight: 700; }
+.tv .osd small { opacity: .8; font-size: 6px; }
+.tv .k4 { position: absolute; right: 4%; top: 6%; background: #2b4be6; color: #fff; font-size: 7px; font-weight: 700; padding: 1px 6px; border-radius: 999px; }
+.tv .foot { width: 26%; height: 8px; margin: 0 auto; background: var(--device); border-radius: 0 0 4px 4px; }
+
+/* steps */
+.flow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(1.5rem, 4vw, 4rem); align-items: start; }
+@media (max-width: 860px) { .flow { grid-template-columns: minmax(0, 1fr); } }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; counter-reset: s; }
+.steps li { counter-increment: s; display: grid; grid-template-columns: 2.5rem minmax(0, 1fr); gap: 1rem; padding-block: 1.1rem; border-bottom: 1px solid var(--line); }
+.steps li:first-child { border-top: 1px solid var(--line); }
+.steps li::before { content: counter(s); font-family: var(--f-display); font-weight: 800; font-size: 1.6rem; line-height: 1.2; color: var(--accent); }
+.steps h3 { margin-bottom: .2rem; }
+.steps p { color: var(--muted); }
+.pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 5rem); }
+.pair > div { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 1.1rem 1.1rem 1.25rem; display: grid; gap: .4rem; min-width: 0; }
+.pair small { color: var(--muted); font-size: var(--s-1); }
+.pair .num { display: flex; gap: .35rem; font-family: var(--f-mono); font-weight: 600; font-size: clamp(1.3rem, 4.6vw, 1.9rem); line-height: 1; }
+.pair .num i { font-style: normal; background: var(--sunk); border-radius: 6px; padding: .4rem 0; width: 1.6em; text-align: center; }
+.pair .acts { display: flex; gap: .5rem; flex-wrap: wrap; }
+.pair .acts span { font-size: var(--s-1); padding: .2rem .8rem; border-radius: 999px; border: 1px solid var(--line); }
+.pair .acts span.ok { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+@media (max-width: 480px) { .pair { grid-template-columns: minmax(0, 1fr); } }
+.pair .note { grid-column: 1 / -1; background: none; border: 0; padding: 0; color: var(--muted); font-size: var(--s-1); }
+
+/* quality */
+.quality { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(1.5rem, 4vw, 4rem); align-items: center; }
+@media (max-width: 860px) { .quality { grid-template-columns: minmax(0, 1fr); } }
+.layers { position: relative; aspect-ratio: 16 / 11; max-width: 100%; }
+.layers .ly { position: absolute; left: 10%; right: 10%; aspect-ratio: 16 / 9; border-radius: 6px; transform: perspective(900px) rotateX(55deg) rotateZ(-30deg); overflow: hidden; }
+.layers .ui { top: -4%; border: 1.5px dashed var(--accent); background: color-mix(in srgb, var(--accent) 7%, transparent); z-index: 2; }
+.layers .vid { top: 26%; box-shadow: 0 30px 40px -24px rgba(0,0,0,.6); }
+.layers .vid svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.layers .ui .osd { position: absolute; left: 5%; bottom: 8%; display: flex; gap: 6px; align-items: center; background: rgba(10,12,16,.78); color: #f2f3f5; font-size: 11px; padding: 3px 8px; border-radius: 4px; font-family: var(--f-mono); }
+.layers .ui .osd b { background: #2f6fe0; color: #fff; padding: 0 4px; border-radius: 2px; }
+@media (max-width: 600px) { .layers .ui .osd { font-size: 8px; padding: 2px 5px; } .layers .ui .lb, .layers .vid .lb { font-size: 10px; } }
+.layers .ui .lb, .layers .vid .lb { position: absolute; right: 5%; top: 8%; font-size: 12px; font-weight: 700; }
+.layers .ui .lb { color: var(--accent); }
+.layers .vid .lb { color: #fff; background: rgba(0,0,0,.45); padding: 0 .4rem; border-radius: 3px; }
+.legend { list-style: none; margin: .5rem 0 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; font-size: var(--s-1); line-height: 1.6; }
+.legend li { display: grid; gap: .1rem; padding-top: .6rem; border-top: 2px solid var(--line); }
+.legend li.u { border-top: 2px dashed var(--accent); }
+.legend b { font-family: var(--f-mono); font-weight: 600; font-size: .875rem; }
+.legend span { color: var(--muted); }
+
+.spec { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.spec table { border-collapse: collapse; width: 100%; font-size: .875rem; }
+.spec th, .spec td { text-align: left; padding: .75rem .9rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+.spec tr:last-child td { border-bottom: 0; }
+.spec thead th { font-size: var(--s-1); color: var(--muted); font-weight: 500; background: var(--sunk); }
+.spec td.res { font-family: var(--f-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.spec td.res.hi { color: var(--accent); font-weight: 600; }
+@media (max-width: 600px) {
+  .spec thead { display: none; }
+  .spec tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .2rem 1rem; padding: .85rem 1rem; border-bottom: 1px solid var(--line); }
+  .spec tr:last-child { border-bottom: 0; }
+  .spec td { padding: 0; border: 0; }
+  .spec td:first-child { font-weight: 700; }
+  .spec td:nth-child(2) { grid-column: 1 / -1; grid-row: 2; color: var(--muted); }
+  .spec td.res { grid-column: 2; grid-row: 1; text-align: right; }
+}
+.foot-note { color: var(--muted); font-size: var(--s-1); margin-top: .9rem; }
+
+/* privacy */
+.facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 clamp(1.5rem, 4vw, 3.5rem); }
+@media (max-width: 720px) { .facts { grid-template-columns: minmax(0, 1fr); } }
+.facts > div { padding-block: 1.25rem; border-top: 1px solid var(--line); display: grid; gap: .35rem; }
+.facts p { color: var(--muted); }
+.facts .k { font-family: var(--f-mono); font-size: .8125rem; color: var(--accent); }
+.caveat { margin-top: 2rem; padding: 1rem 1.2rem; border-radius: 10px; background: var(--accent-soft); font-size: .9375rem; max-width: 46rem; }
+
+/* devices + status */
+.req { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+@media (max-width: 900px) { .req { grid-template-columns: minmax(0, 1fr); } }
+.req > div { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem; display: grid; gap: .6rem; align-content: start; min-width: 0; }
+.req dl { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .35rem 1rem; font-size: .875rem; }
+.req dt { color: var(--muted); }
+.req dd { margin: 0; }
+.pill { font-size: .75rem; padding: .1rem .6rem; border-radius: 999px; border: 1px solid currentColor; width: fit-content; }
+.pill.a { color: var(--ok); }
+.pill.b { color: var(--accent); }
+
+.road { list-style: none; margin: 2.5rem 0 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; }
+@media (max-width: 860px) { .road { grid-template-columns: minmax(0, 1fr); } }
+.road li { padding: 1rem 1rem 1rem 0; border-top: 3px solid var(--line); display: grid; gap: .3rem; align-content: start; }
+@media (max-width: 860px) { .road li { padding: 1rem 0; } }
+.road li.done { border-top-color: var(--accent); }
+.road li.now { border-top-color: var(--accent); border-top-style: dashed; }
+.road small { color: var(--muted); font-size: var(--s-1); }
+.road b { font-size: .9375rem; }
+.road p { color: var(--muted); font-size: .875rem; }
+
+footer { border-top: 1px solid var(--line); padding-block: 2.5rem 3rem; color: var(--muted); font-size: .875rem; }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 1rem 2rem; justify-content: space-between; align-items: center; }
+footer nav { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; }
+
+/* scene palettes: these are illustrated "photos", same in both themes */
+.sc-dawn  { --sky: #f2c7a5; --sun: #fff1d6; --r1: #c99a8c; --r2: #9a7184; --r3: #634a69; --r4: #2f2540; }
+.sc-sea   { --sky: #bcd8e6; --sun: #f8f4e3; --r1: #8fb4c8; --r2: #5f8ea8; --r3: #2f6382; --r4: #143a52; }
+.sc-night { --sky: #2a2f52; --sun: #e9e4c8; --r1: #3f4472; --r2: #2e335a; --r3: #1f2342; --r4: #11132a; }
+.sc-fern  { --sky: #d9e3c9; --sun: #fbf7e3; --r1: #a8bf92; --r2: #7c9a6b; --r3: #4f7149; --r4: #24402a; }
+.sc-dusk  { --sky: #e9a27f; --sun: #ffe0b8; --r1: #c27373; --r2: #8d4f63; --r3: #57344f; --r4: #261a2c; }
+.sc-snow  { --sky: #dfe6ee; --sun: #ffffff; --r1: #c3cfdc; --r2: #9eafc2; --r3: #6c8199; --r4: #34465b; }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="scene" viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice">
+      <rect width="160" height="100" style="fill:var(--sky)"/>
+      <circle cx="112" cy="34" r="11" style="fill:var(--sun)"/>
+      <path d="M0 58 L22 44 L40 52 L62 36 L84 50 L104 42 L128 54 L148 46 L160 50 V100 H0Z" style="fill:var(--r1)"/>
+      <g style="transform:translateX(calc(var(--px, 0px) * .4))"><path d="M-10 70 L18 56 L44 66 L70 52 L96 64 L120 56 L150 68 L172 62 V100 H-10Z" style="fill:var(--r2)"/></g>
+      <g style="transform:translateX(calc(var(--px, 0px) * .75))"><path d="M-10 82 L26 66 L52 76 L82 64 L110 78 L138 70 L172 80 V100 H-10Z" style="fill:var(--r3)"/></g>
+      <g style="transform:translateX(var(--px, 0px))"><path d="M-14 100 L-14 88 L18 78 L30 84 L40 72 L52 86 L92 90 L132 84 L176 92 V100Z" style="fill:var(--r4)"/></g>
+    </symbol>
+  </defs>
+</svg>
+
+<header class="top">
+  <div class="wrap">
+    <a class="mark" href="#top" aria-label="Okuyuki トップへ">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="12" height="12" rx="3" fill="#2b4be6"/><rect x="9" y="9" width="13" height="13" rx="3" fill="#e9603f"/><rect x="9" y="9" width="5" height="5" rx="1.4" fill="var(--bg)"/></svg>
+      Okuyuki
+    </a>
+    <nav aria-label="ページ内">
+      <a href="#devices">見られる画面</a>
+      <a href="#how">つなぎかた</a>
+      <a href="#quality">画質</a>
+      <a href="#privacy">写真の扱い</a>
+      <a href="#status">開発状況</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap">
+      <div class="copy">
+        <span class="status"><i></i>アルファ版を開発中 · 実機での確認はこれから</span>
+        <h1>スマホの写真に、<br><span class="deep">奥行き</span>を。</h1>
+        <p class="lede">Okuyuki（おくゆき）は、Galaxy に入っている写真と動画を、同じ Wi-Fi の大きな画面で見るためのアプリです。Meta Quest では 3D 写真を立体で、LG のテレビでは 4K と HDR で表示します。写真はスマホに置いたまま、クラウドも経由しません。</p>
+        <div class="cta">
+          <a class="btn primary" href="#how">つなぎかたを見る</a>
+          <a class="btn" href="#status">開発状況</a>
+        </div>
+      </div>
+      <div class="stack" aria-hidden="true">
+        <div class="frame f1 sc-night"><svg><use href="#scene"/></svg></div>
+        <div class="frame f2 sc-sea"><svg><use href="#scene"/></svg></div>
+        <div class="frame f3 sc-dawn"><svg><use href="#scene"/></svg></div>
+        <div class="hand">
+          <div class="phone">
+            <div class="scr">
+              <div class="bar"><b><svg class="bm" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="12" height="12" rx="3" fill="#2b4be6"/><rect x="9" y="9" width="13" height="13" rx="3" fill="#e9603f"/><rect x="9" y="9" width="5" height="5" rx="1.4" fill="#f5f6f8"/></svg>Okuyuki</b><span class="live">● テレビに接続中</span></div>
+              <div class="seg"><span>3D写真 4</span><span class="on">すべて 19</span></div>
+              <div class="day">2025年10月9日（木）· 6件</div>
+              <div class="grid">
+                <div class="sc-dusk"><svg><use href="#scene"/></svg><em>3D</em></div>
+                <div class="sc-fern"><svg><use href="#scene"/></svg><em>3D</em></div>
+                <div class="sc-dawn"><svg><use href="#scene"/></svg><em>3D</em></div>
+                <div class="sc-sea"><svg><use href="#scene"/></svg><em>HDR</em></div>
+                <div class="sc-snow"><svg><use href="#scene"/></svg></div>
+                <div class="sc-night now"><svg><use href="#scene"/></svg><em class="n">表示中</em><em class="v">▶ 0:12</em></div>
+              </div>
+              <div class="mini"><i class="sc-night"><svg><use href="#scene"/></svg></i><span><small>テレビで表示中</small>VID_20251009_1408.mp4</span></div>
+              <div class="nav"><span class="on">ライブラリ</span><span>つなぐ</span><span>設定</span></div>
+            </div>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+  </section>
+
+  <section class="plane" id="devices">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow">見られる画面</span>
+        <h2>写真はスマホに。見るのは、いちばん良い画面で。</h2>
+        <p class="lede">スマホが写真の置き場所になり、Quest とテレビはそこから必要な分だけを受け取って表示します。</p>
+      </div>
+      <div class="trio">
+        <article class="dev">
+          <div class="stage">
+            <div class="phone">
+              <div class="scr">
+                <div class="bar"><b>つなぐ</b><span class="live">● テレビに接続中</span></div>
+                <div class="card"><span>✓ 接続を待つ</span><div class="tg"></div><b>テレビに接続中</b><span>写真はテレビのリモコンでも選べます</span></div>
+                <div class="box"><b>テレビで見る</b><div class="row"><span>[LG] webOS TV</span><span class="open">開く</span></div></div>
+                <div class="nav"><span>ライブラリ</span><span class="on">つなぐ</span><span>設定</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="role"><b>Galaxy</b>スマホ · 写真の置き場所</div>
+          <ul>
+            <li>ギャラリーの写真と動画をそのまま一覧に</li>
+            <li>「接続を待つ」をオンにして、テレビや Quest とつなぐ</li>
+            <li>いまテレビや Quest に映している写真に「表示中」が付く</li>
+          </ul>
+        </article>
+        <article class="dev">
+          <div class="stage">
+            <div class="visor" aria-label="Quest の左右の目に別々の画像を出すイメージ">
+              <div class="eye sc-dawn" style="--px:-3px"><svg><use href="#scene"/></svg><span>左目</span></div>
+              <div class="eye sc-dawn" style="--px:3px"><svg><use href="#scene"/></svg><span>右目</span></div>
+            </div>
+          </div>
+          <div class="role"><b>Meta Quest</b>3 / 3S · 立体で見る</div>
+          <ul>
+            <li>Galaxy で撮った 3D 写真を、左右の目に分けて立体で表示</li>
+            <li>写真は一時キャッシュ（上限 1GB）に置き、終わったら消す</li>
+            <li>同じ Wi-Fi のスマホを自動で見つける</li>
+          </ul>
+        </article>
+        <article class="dev">
+          <div class="stage">
+            <div class="tv">
+              <div class="panel"><div class="pic sc-sea"><svg><use href="#scene"/></svg><div class="osd"><b>2月7日（土）13:00</b><small>1 / 150</small></div><span class="k4">4K</span></div></div>
+              <div class="foot"></div>
+            </div>
+          </div>
+          <div class="role"><b>LG テレビ</b>webOS · Okuyuki TV</div>
+          <ul>
+            <li>写真をまず 1080p で出し、準備ができたら 4K に切り替え</li>
+            <li>4K HDR の動画は元のファイルをそのまま再生</li>
+            <li>リモコンの十字キーとマジックリモコンで操作</li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="plane" id="how">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow">つなぎかた</span>
+        <h2>テレビのリモコンで、文字は打ちません。</h2>
+        <p class="lede">操作はほとんどスマホだけで済みます。同じ 4 桁の番号が両方の画面に出るので、つなぐ相手を取り違えません。</p>
+      </div>
+      <div class="flow">
+        <ol class="steps">
+          <li><div><h3>同じ Wi-Fi につなぐ</h3><p>スマホと Quest、またはスマホとテレビを、家の同じ Wi-Fi に入れます。</p></div></li>
+          <li><div><h3>スマホで「接続を待つ」をオン</h3><p>スマホの「つなぐ」で「接続を待つ」をオンにして、「テレビで見る」に出たテレビの「開く」を押します。テレビで Okuyuki TV が自動で開きます。Quest では、Okuyuki を開いて「近くのスマホ」から選びます。</p></div></li>
+          <li><div><h3>番号を見比べて「許可」</h3><p>両方の画面に同じ 4 桁の番号が出ます。同じなら、スマホで「許可する」を押します。2 回目からは、開くだけで前回のスマホにつながります。</p></div></li>
+          <li><div><h3>大きな画面で見る</h3><p>一覧から写真や動画を選びます。スマホで選んで「テレビで表示」もできます。</p></div></li>
+        </ol>
+        <div class="pair" aria-label="スマホとテレビに同じ番号が出ている例">
+          <div>
+            <small>スマホ</small>
+            <span>テレビがつなごうとしています</span>
+            <span class="num"><i>4</i><i>7</i><i>8</i><i>6</i></span>
+            <div class="acts"><span class="ok">許可する</span><span>拒否する</span></div>
+          </div>
+          <div>
+            <small>テレビ</small>
+            <span>スマホで許可してください</span>
+            <span class="num"><i>4</i><i>7</i><i>8</i><i>6</i></span>
+            <small>同じ番号が出ていれば、スマホで「許可する」を押してください。</small>
+          </div>
+          <p class="note">自動で見つからないときは、スマホの「つなぐ」に出ているアドレス（例: 192.168.1.10:38765）を入力してもつながります。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="plane" id="quality">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow">画質</span>
+        <h2>テレビの「動画の面」で、写真を 4K に。</h2>
+        <p class="lede">LG のテレビアプリは、画面の文字やボタンを 1920×1080 で描きます。4K で映せるのは動画の再生面だけです。そこで Okuyuki は、写真をスマホで 1 枚だけの動画に変えて再生面に出し、その上に操作の表示を重ねます。</p>
+      </div>
+      <div class="quality">
+        <div>
+          <div class="layers" aria-label="上に操作の面、下に 4K の写真を出す動画の面が重なっている図">
+            <div class="ly vid sc-snow"><svg><use href="#scene"/></svg><span class="lb">動画の面</span></div>
+            <div class="ly ui"><span class="lb">操作の面</span><div class="osd"><b>4K</b>2月7日（土）13:00 · 1 / 150</div></div>
+          </div>
+          <ul class="legend">
+            <li class="u"><b>1920×1080</b><span>操作の面。日付・枚数・ボタン</span></li>
+            <li><b>3840×2160</b><span>動画の面。写真そのもの。HDR の写真は HLG で</span></li>
+          </ul>
+        </div>
+        <div>
+          <div class="spec">
+            <table>
+              <thead><tr><th>見るもの</th><th>テレビでの出し方</th><th>解像度</th></tr></thead>
+              <tbody>
+                <tr><td>動画（4K まで）</td><td>元のファイルをそのまま再生。HDR10・HLG もそのまま</td><td class="res hi">元のまま</td></tr>
+                <tr><td>8K 動画</td><td>スマホで 4K に変換して再生</td><td class="res">3840×2160</td></tr>
+                <tr><td>写真（すぐに表示）</td><td>まず高品質な JPEG で表示</td><td class="res">1920×1080</td></tr>
+                <tr><td>写真（最高画質）</td><td>準備ができ次第、4K の静止画に切り替え。左下が「4K」になる</td><td class="res hi">3840×2160</td></tr>
+                <tr><td>3D 写真</td><td>テレビでは片目の画像を表示。立体は Quest で</td><td class="res">上と同じ</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="foot-note">Quest では 3D 写真を左右の目に分けて表示します。最高画質の見え方と、機種ごとの対応形式は、実機で確かめているところです。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="plane" id="privacy">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow">写真の扱い</span>
+        <h2>写真は、あなたのスマホから出ていきません。</h2>
+      </div>
+      <div class="facts">
+        <div><span class="k">クラウド</span><h3>どこにもアップロードしない</h3><p>スマホと画面は家の Wi-Fi の中だけで直接やりとりします。アカウント登録もありません。</p></div>
+        <div><span class="k">保存</span><h3>見終わったら消える</h3><p>Quest は一時キャッシュ（上限 1GB）を開始と終了のたびに空にします。テレビは写真をメモリに置くだけで、保存しません。</p></div>
+        <div><span class="k">許可</span><h3>つなぐ相手はスマホが決める</h3><p>新しい機器は、スマホで「許可する」を押すまで写真を見られません。つないだ機器は設定からいつでも解除できます。接続のない状態が 10 分続くと、待ち受けも自動でオフになります。</p></div>
+        <div><span class="k">鍵</span><h3>推測できない合言葉</h3><p>許可した機器には 256 ビットの乱数の鍵を渡し、スマホには鍵そのものではなく照合用の値だけを残します。</p></div>
+      </div>
+      <p class="caveat">アルファ版の通信はまだ暗号化していません。自宅など信頼できる Wi-Fi か、スマホのテザリングで使ってください。暗号化（TLS）は正式版までに入れます。</p>
+    </div>
+  </section>
+
+  <section class="plane" id="status">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow">対応機器と開発状況</span>
+        <h2>いまはアルファ版です。</h2>
+        <p class="lede">個人で開発しているアプリです。どれも実機での確認はこれからで、ストアでの配布はまだありません。</p>
+      </div>
+      <div class="req">
+        <div>
+          <span class="pill a">アルファ版を配布中</span>
+          <h3>Okuyuki（スマホ）</h3>
+          <dl><dt>機種</dt><dd>Galaxy（S25 Ultra を想定）</dd><dt>OS</dt><dd>Android 16</dd><dt>版</dt><dd class="mono">0.1.0-alpha.1</dd></dl>
+        </div>
+        <div>
+          <span class="pill a">アルファ版を配布中</span>
+          <h3>Okuyuki Quest</h3>
+          <dl><dt>機種</dt><dd>Meta Quest 3 / 3S</dd><dt>入れ方</dt><dd>開発者モードで APK を入れる</dd><dt>版</dt><dd class="mono">0.1.0-alpha.1</dd></dl>
+        </div>
+        <div>
+          <span class="pill b">開発中</span>
+          <h3>Okuyuki TV</h3>
+          <dl><dt>機種</dt><dd>LG webOS テレビ（webOS 22 以降）</dd><dt>確認機</dt><dd>LG OLED evo C5</dd><dt>版</dt><dd class="mono">0.1.0（試作）</dd></dl>
+        </div>
+      </div>
+      <ol class="road">
+        <li class="done"><small>済</small><b>Quest 版アルファ</b><p>3D 写真の一覧、転送、スマホでの許可</p></li>
+        <li class="done"><small>済</small><b>テレビ版の試作</b><p>4K 静止画、動画再生、テレビの自動起動</p></li>
+        <li class="done"><small>済</small><b>画面の仕上げ</b><p>3 つのアプリの画面とアイコンを作り直し</p></li>
+        <li class="now"><small>いま</small><b>実機での確認</b><p>スマホと Quest で先に確かめ、テレビは最後に</p></li>
+        <li><small>この先</small><b>正式版に向けて</b><p>暗号化、スライドショー、アルバムでの絞り込み</p></li>
+      </ol>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Okuyuki · 個人開発のアプリです。Galaxy、Meta Quest、LG、webOS は各社の商標です。</span>
+    <nav aria-label="ソースコード">
+      <a href="https://github.com/lingmulongtai/Okuyuki-android">Android</a>
+      <a href="https://github.com/lingmulongtai/Okuyuki-quest">Quest</a>
+      <a href="https://github.com/lingmulongtai/Okuyuki-webos">webOS</a>
+    </nav>
+  </div>
+</footer>
+</body>
+</html>
