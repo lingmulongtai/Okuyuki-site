@@ -26,3 +26,13 @@ test('ページ内リンクの行き先がすべてある', async ({ page }) => 
       .filter((id) => !document.getElementById(id)));
   expect(missing).toEqual([]);
 });
+
+test('端末のイメージの中身が画面の枠からはみ出さない', async ({ page }) => {
+  await page.goto('index.html');
+  await page.waitForTimeout(1800);
+  const overflow = await page.evaluate(() =>
+    [...document.querySelectorAll('.phone .scr')]
+      .filter((el) => el.scrollWidth > el.clientWidth + 1)
+      .map((el) => el.closest('section')?.id || 'hero'));
+  expect(overflow).toEqual([]);
+});
