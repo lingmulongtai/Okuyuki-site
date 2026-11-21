@@ -38,6 +38,7 @@ jobs:
         run: |
           mkdir -p /tmp/pages
           cp index.html /tmp/pages/
+          if [ -d assets ]; then cp -r assets /tmp/pages/assets; fi
           touch /tmp/pages/.nojekyll
           cd /tmp/pages
           git init -q -b gh-pages
